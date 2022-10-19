@@ -100,11 +100,11 @@ public class EnermyEntity implements Movable{
                         this.getY() + image.getHeight() / HALF));
     }
 
-    public boolean checkBlockCollision(ArrayList<Entity> entities, ArrayList<Sinkhole> sinkholes) {
+    public boolean checkBlockCollision(ArrayList<Tree> trees, ArrayList<Sinkhole> sinkholes) {
         Rectangle enemyBox = this.getBoundingBox();
         {
-            for (Entity entity : entities) {
-                Rectangle entityBox = entity.getBoundingBox();
+            for (Entity tree : trees) {
+                Rectangle entityBox = tree.getBoundingBox();
                 if (enemyBox.intersects(entityBox)) {
                     return true;
                 }
@@ -123,7 +123,7 @@ public class EnermyEntity implements Movable{
                 || (enermyEntity.getX() < topLeft.x) || (enermyEntity.getX() > bottomRight.x);
     }
 
-    public void setEnermyHealthColour(double percentageHp) {
+    public void setEnemyHealthColour(double percentageHp) {
         if (percentageHp < RED_HEALTH) {
             COLOUR.setBlendColour(RED);
         } else if (percentageHp <= ORANGE_HEALTH) {

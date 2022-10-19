@@ -29,7 +29,7 @@ public class Demon extends EnermyEntity {
         return MAX_HEALTH_POINT;
     }
 
-    public void draw(ArrayList<Entity> entities, ArrayList<Sinkhole> sinkholes,
+    public void update(ArrayList<Tree> trees, ArrayList<Sinkhole> sinkholes,
                        Player player, Point topLeft, Point bottomRight) {
         if (isAggressive()) {
             move();
@@ -49,14 +49,14 @@ public class Demon extends EnermyEntity {
         } else {
             setCurrentImage(DEMON_RIGHT);
         }
-        if(checkBlockCollision(entities,sinkholes) || isOutOfBound(topLeft,bottomRight,this)){//this
+        if(checkBlockCollision(trees,sinkholes) || isOutOfBound(topLeft,bottomRight,this)){//this
             moveBack();
         }
-        if(checkDemonCollision(player) && !isDead()) {
+        if(checkCollision(player) && !isDead()) {
             fire = new Fire(getX() + getImage().getWidth()/2, getY() + getImage().getHeight()/2,
                     player.getX() + player.currentImage.getWidth()/2,player.getY()+player.currentImage.getHeight()/2);
         }
-        if(fire != null && checkDemonCollision(player)){
+        if(fire != null && checkCollision(player)){
             fire.draw(player);
         }
         if(isInVincible()){
@@ -76,7 +76,7 @@ public class Demon extends EnermyEntity {
         return (enermyEntity.getY() > bottomRight.y) || (enermyEntity.getY() < topLeft.y)
                 || (enermyEntity.getX() < topLeft.x) || (enermyEntity.getX() > bottomRight.x);
     }
-    public boolean checkDemonCollision(Player player){
+    public boolean checkCollision(Player player){
         Rectangle playerBox = player.getBoundingBox();
         if(this.getAttackBox().intersects(playerBox)){
             return true;

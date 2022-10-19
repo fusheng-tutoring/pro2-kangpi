@@ -80,8 +80,9 @@ public class Player {
      * @param walls
      * @param sinkholes
      */
-    public void draw(Input input,ArrayList<Entity> walls,ArrayList<Sinkhole> sinkholes,ArrayList<Entity> entities,ArrayList<Demon> demons,Navec navec,Point topLeft,Point bottomRight) {
-        boolean stop = checkCollisions(walls,sinkholes);
+    public void update(Input input,ArrayList<Wall> walls,ArrayList<Sinkhole> sinkholes, ArrayList<Tree> trees,
+                       ArrayList<Demon> demons, Navec navec, Point topLeft, Point bottomRight) {
+        boolean stop = checkCollisions(walls, sinkholes, trees);
         if (input.isDown(Keys.UP) && !stop) {
             move(NO_MOVE, -STEP_SIZE);
             xold = cur_x;
@@ -111,7 +112,7 @@ public class Player {
             }
         }
         if (attackState) {
-            checkDemonCollisions(demons, navec);
+            checkEnemyCollisions(demons, navec);
             attackFrame++;
         }
         if (attackFrame / (REFRESH_RATE / 1000) > ATTACK_TIME) {
@@ -143,7 +144,7 @@ public class Player {
             coolDownState = true;
             invincibleFrame = 0;
         }
-        if (checkCollisions(entities,sinkholes) || navec.isOutOfBound(topLeft,bottomRight,this)){
+        if (checkCollisions(walls, sinkholes, trees) || navec.isOutOfBound(topLeft,bottomRight,this)){
             moveBack();
         }
         currentImage.drawFromTopLeft(this.getX(),this.getY());
@@ -159,16 +160,22 @@ public class Player {
         HEALTH_FONT.drawString(Math.round(percentageHP) + "%", HEALTH_X, HEALTH_Y, COLOUR);
     }
     /**
-     * Checking if player is overlay on the walls or sinkhole
+     * Checking if player is overlaid on the walls or sinkhole
      * @param walls
      * @param sinkholes
      * @return boolean
      */
-    public boolean checkCollisions(ArrayList<Entity> walls, ArrayList<Sinkhole> sinkholes) {
+    public boolean checkCollisions(ArrayList<Wall> walls, ArrayList<Sinkhole> sinkholes, ArrayList<Tree> trees) {
         Rectangle playerBox = this.getBoundingBox();
         for (Entity wall: walls) {
             Rectangle wallBox = wall.getBoundingBox();
             if (playerBox.intersects(wallBox)) {
+                return true;
+            }
+        }
+        for (Entity tree: trees) {
+            Rectangle treeBox = tree.getBoundingBox();
+            if (playerBox.intersects(treeBox)) {
                 return true;
             }
         }
@@ -181,9 +188,10 @@ public class Player {
                         "Fae's current health: " + healthPoint + '/' + MAX_HEALTH_POINT);
             }
         }
+
         return false;
     }
-    private void checkDemonCollisions(ArrayList<Demon>demons,Navec navec) {
+    private void checkEnemyCollisions(ArrayList<Demon>demons, Navec navec) {
         Rectangle playerBox = this.getBoundingBox();
         Rectangle navecBox = navec.getBoundingBox();
         if(playerBox.intersects(navecBox) && !navec.isInVincible()) {
@@ -264,7 +272,7 @@ public class Player {
         this.invincibleState = invincibleState;
     }
 
-    public Image getcurrentImage() {
+    public Image getImage() {
         return currentImage;
     }
 

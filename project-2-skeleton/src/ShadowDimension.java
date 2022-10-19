@@ -12,7 +12,33 @@ import java.util.ArrayList;
  */
 
 public class ShadowDimension extends AbstractGame{
-    /*Position Settings*/
+    /*Define Image*/
+    private final Image BACKGROUND_IMAGE = new Image("res/background0.png");
+    private final Image BACKGROUND_IMAGE_1 = new Image("res/background1.png");
+
+    private final String treeAddress = "res/tree.png";
+    private final String demonRightAddress = "res/demon/demonRight.png";
+    private final String navecRightAddress = "res/navec/navecRight.png";
+    private final String sinkholeAddress = "res/sinkhole.png";
+    private final String wallAddress = "res/wall.png";
+    private final String FILE_NAME = "res/level0.csv";
+    private final String LEVEL1_FILE_NAME = "res/level1.csv";
+    /* Font Settings */
+    private final int NORMAL_MESSAGE_FONT_SIZE = 75;
+    private final int INSTRUCTION_MESSAGE_FONT_SIZE = 40;
+    private final Font MEG = new Font("res/frostbite.ttf", INSTRUCTION_MESSAGE_FONT_SIZE);
+    private final Font FONT = new Font("res/frostbite.ttf", NORMAL_MESSAGE_FONT_SIZE);
+    /* Define String */
+    private final static String GAME_TITLE = "SHADOW DIMENSION";
+    private final static String BEGIN_MESSAGE = "PRESS SPACE TO STAR";
+    private final static String HINT_MESSAGE = "USE ARROW KEYS TO FIND GATE";
+    private final static String INSTRUCT_MESSAGE0 = "PRESS SPACE TO START";
+    private final static String INSTRUCT_MESSAGE1 = "PRESS A TO ATTACK";
+    private final static String INSTRUCT_MESSAGE2 = "DEFEAT NAVEC TO WIN";
+    private final static String COMPLETE_MESSAGE = "LEVEL_COMPLETE";
+    private final static String WIN_MESSAGE = "CONGRATULATIONS";
+    private final static String LOSE_MESSAGE = "GAME OVER";
+    /* Position Settings */
     private final static int WINDOW_WIDTH = 1024;
     private final static int WINDOW_HEIGHT = 768;
     private final static int MIDDLE_SHORT_X = 360;
@@ -27,64 +53,37 @@ public class ShadowDimension extends AbstractGame{
 
     private final static int OFFSET_X = 90;
     private final static int OFFSET_Y = 190;
-    /*Define Image*/
-    private final Image BACKGROUND_IMAGE = new Image("res/background0.png");
-    private final Image BACKGROUND_IMAGE_1 = new Image("res/background1.png");
-
-    private final String treeAddress = "res/tree.png";
-    private final String demonRightAddress = "res/demon/demonRight.png";
-    private final String navecRightAddress = "res/navec/navecRight.png";
-    private final String sinkholeAddress = "res/sinkhole.png";
-    private final String wallAddress = "res/wall.png";
-    private final String FILE_NAME = "res/level0.csv";
-    private final String LEVEL1_FILE_NAME = "res/level1.csv";
-    /*Define Font */
-    private final int NORMAL_MESSAGE_FONT_SIZE = 75;
-    private final int INSTRUCTION_MESSAGE_FONT_SIZE = 40;
-    private final Font MEG = new Font("res/frostbite.ttf", INSTRUCTION_MESSAGE_FONT_SIZE);
-    private final Font FONT = new Font("res/frostbite.ttf", NORMAL_MESSAGE_FONT_SIZE);
-    /*Define String*/
-    private final static String GAME_TITLE = "SHADOW DIMENSION";
-    private final static String BEGIN_MESSAGE = "PRESS SPACE TO STAR";
-    private final static String HINT_MESSAGE = "USE ARROW KEYS TO FIND GATE";
-    private final static String INSTRUCT_MESSAGE0 = "PRESS SPACE TO START";
-    private final static String INSTRUCT_MESSAGE1 = "PRESS A TO ATTACK";
-    private final static String INSTRUCT_MESSAGE2 = "DEFEAT NAVEC TO WIN";
-    private final static String COMPLETE_MESSAGE = "LEVEL_COMPLETE";
-    private final static String WIN_MESSAGE = "CONGRATULATIONS";
-    private final static String LOSE_MESSAGE = "GAME OVER";
-    /*Static Ints*/
+    /* Static Ints*/
     private final static double STEP_SIZE = 2;
     private final static double TWICE = 2.0;
     private final static int NO_HEALTH = 0;
-    /*Game entities*/
+    private final double REFRESH_RATE = 60;
+    private final double LEVEL_UP_TIME = 3000;
+    /* Game entities */
+
     private ArrayList<Sinkhole> sinkholes = new ArrayList<>();
-    private ArrayList<Entity> walls = new ArrayList<>();
-    private ArrayList<Entity> trees = new ArrayList<>();
+    private ArrayList<Wall> walls = new ArrayList<>();
+    private ArrayList<Tree> trees = new ArrayList<>();
     private ArrayList<Demon> demons = new ArrayList<>();
-    private ArrayList<Navec> navec = new ArrayList<Navec>();
-
-    private ArrayList<TimescaleControl> timescaleControl = new ArrayList<>();
-
+    private Navec navec;
+    /* Variables */
+    private TimescaleControl timescaleControl;
+    private static String filename;
     private boolean isGameFinish;
     private boolean isGameBegin;
     private boolean isGameWin;
     private boolean levelUp;
     private boolean hasLevelUp;
     private int levelUpFrame;
-    private double REFRESH_RATE = 60;
-    private double LEVEL_UP_TIME = 3000;
     private Point bottomRight;
     private Point topLeft;
     private Player player;
-    private static String filename;
     /**
      * Check window size
      */
-    ShadowDimension(String filename){
+    ShadowDimension(){
         super(WINDOW_WIDTH, WINDOW_HEIGHT, GAME_TITLE);
-        this.filename = filename;
-        readCSV(filename);
+        this.filename = FILE_NAME;
         isGameWin = false;
         isGameBegin = false;
         isGameFinish = false;
@@ -95,16 +94,17 @@ public class ShadowDimension extends AbstractGame{
     /**
      * The entry point for the program.
      */
-    public static void main(String[] args) {
-        ShadowDimension game = new ShadowDimension(filename);
+    public void main(String[] args) {
+        ShadowDimension game = new ShadowDimension();
         game.run();
+        readCSV(filename);
     }
     /**
      * Method used to read file and create objects (You can change this
      * method as you wish).
      */
     private void readCSV(String filename){
-        try(BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String text = null;
             while ((text = br.readLine()) != null) {
                 String[] position = text.split(","); // Split text in level0.csv through comma
@@ -118,62 +118,37 @@ public class ShadowDimension extends AbstractGame{
                     bottomRight = new Point(Integer.parseInt(position[1]), Integer.parseInt(position[2]));
                 } else if (position[0].equals("TopLeft")) {
                     topLeft = new Point(Integer.parseInt(position[1]), Integer.parseInt(position[2]));
+                } else if(position[0].equals("Tree")) {
+                    trees.add(new Tree(Double.parseDouble(position[1]), Double.parseDouble(position[2]),treeAddress));
+                } else if (position[0].equals("Demon")) {
+                    demons.add(new Demon(Double.parseDouble(position[1]), Double.parseDouble(position[2]), demonRightAddress));
+                } else if(position[0].equals("Navec")){
+                    navec = new Navec(Double.parseDouble(position[1]), Double.parseDouble(position[2]), navecRightAddress);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try(BufferedReader br = new BufferedReader(new FileReader(LEVEL1_FILE_NAME))) {
-            String text = null;
-            while ((text = br.readLine()) != null) {
-                String[] position = text.split(","); // Split text in level0.csv through comma
-                if (position[0].equals("Player")) {
-                    player = new Player(Double.parseDouble(position[1]), Double.parseDouble(position[2]));
-                } else if(position[0].equals("Tree")) {
-                    trees.add(new Tree(Double.parseDouble(position[1]), Double.parseDouble(position[2]),treeAddress));
-                } else if (position[0].equals("Demon")) {
-                    demons.add(new Demon(Double.parseDouble(position[1]), Double.parseDouble(position[2]), demonRightAddress));
-                } else if (position[0].equals("Sinkhole")) {
-                    sinkholes.add(new Sinkhole(Double.parseDouble(position[1]), Double.parseDouble(position[2]), sinkholeAddress));
-                } else if(position[0].equals("Navec")){
-                    navec.add(new Navec(Double.parseDouble(position[1]), Double.parseDouble(position[2]),navecRightAddress));
-                }else if (position[0].equals("BottomRight")) {
-                    bottomRight = new Point(Integer.parseInt(position[1]), Integer.parseInt(position[2]));
-                } else if (position[0].equals("TopLeft")) {
-                    topLeft = new Point(Integer.parseInt(position[1]), Integer.parseInt(position[2]));
-                }
-            }
-        }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-        /**
+    }
+    /**
      * Performs a state update.
      * allows the game to exit when the escape key is pressed.
      */
     @Override
     protected void update(Input input) {
         inputUpdate(input);
-        fastPass(input);
         gameStatusUpdate(input);
         gameLevelUp(input);
-
-
     }
-
-
     /**
      * Update inputs commands
      * @param input
      */
     void inputUpdate(Input input){
-        if(input.wasPressed(Keys.ESCAPE)){Window.close();}
-    }
-
-    void fastPass(Input input) {
-        if (input.wasPressed((Keys.W))) {
-            isGameWin = true;
-        }
+        if(input.wasPressed(Keys.ESCAPE)) Window.close();
+        if (input.wasPressed((Keys.W))) isGameWin = true;
+        if (input.wasPressed(Keys.L)) timescaleControl.increaseTimeScale(demons,navec);
+        if (input.wasPressed(Keys.K)) timescaleControl.decreaseTimeScale(demons,navec);
     }
     /**
      * Update game status
@@ -210,23 +185,18 @@ public class ShadowDimension extends AbstractGame{
             }
             if(hasLevelUp) {
                 BACKGROUND_IMAGE_1.draw(Window.getWidth() / TWICE, Window.getHeight() / TWICE);
-                if (input.wasPressed(Keys.L)) {
-                    timescaleControl.increaseTimeScale(demons,navec);
-                } if (input.wasPressed(Keys.K)) {
-                    timescaleControl.decreaseTimeScale(demons,navec);
-                }
                 treeUpdate();
                 sinkholeUpdate();
                 for(Demon demon: demons) {
-                    if(! demon.isDead()){
-                        demon.draw(trees,sinkholes,player,topLeft,bottomRight);
+                    if(!demon.isDead()){
+                        demon.update(trees, sinkholes, player, topLeft, bottomRight);
                     }
                 }
-                navec.draw();
+                navec.update(trees, sinkholes, player, topLeft, bottomRight);
                 if(navec.isDead()){
                     isGameWin = true;
                 }
-                player.draw(input,walls,sinkholes,demons,entities,navec,topLeft,bottomRight);
+                player.update(input,walls,sinkholes, trees, demons, navec, topLeft, bottomRight);
             }
             if(player.isDead()) {
                 isGameFinish = true;
@@ -234,34 +204,29 @@ public class ShadowDimension extends AbstractGame{
         }
     }
     /**
-     * Update walls
+     * Update Walls
      */
     void wallUpdate(){
         for(Entity wall: walls) {
-            wall.draw();
+            wall.update();
         }
     }
     /**
-     * Update sinkholes
+     * Update Sinkholes
      */
     void sinkholeUpdate(){
         for(Sinkhole sinkhole: sinkholes) {
             if(sinkhole.getIsAppear()) {
-                sinkhole.draw();
+                sinkhole.update();
             }
         }
     }
-
+    /**
+     * Update Trees
+     */
     void treeUpdate() {
         for(Entity tree: trees) {
-            tree.draw();
-        }
-    }
-    void demonUpdate(){
-        for(Demon demon: demons) {
-            if(demon.getIsAppear()) {
-                demon.draw(entities,sinkholes,player,topLeft,bottomRight);
-            }
+            tree.update();
         }
     }
     /**
@@ -272,7 +237,7 @@ public class ShadowDimension extends AbstractGame{
 //        player.draw(input,walls,sinkholes,entities,demons,navec,topLeft,bottomRight);
         player.drawHealth();
         /*handle collision with walls and sinkholes*/
-        if (player.checkCollisions(walls, sinkholes)){
+        if (player.checkCollisions(walls, sinkholes, trees)){
             player.moveBack();
         }
         /*Check window bound*/
@@ -286,8 +251,8 @@ public class ShadowDimension extends AbstractGame{
             player.setY(player.getY() - STEP_SIZE);
         }
         /*Check player status*/
-        if(player.isWon()) { isGameWin = true;}
-        if(player.isDead()) { isGameFinish = true;}
+        if(player.isWon())  isGameWin = true;
+        if(player.isDead())  isGameFinish = true;
     }
     /**
      * Draw the start screen

@@ -1,6 +1,9 @@
 import bagel.*;
 import bagel.util.Point;
 import bagel.util.Rectangle;
+
+import java.util.ArrayList;
+
 /**
  * This class is the abstract class for Wall and sinkhole
  */
@@ -23,9 +26,9 @@ public class Entity {
         image = new Image(filename);
     }
     /**
-     * Draw the entity on screen
+     * Update the entity on screen
      */
-    public void draw() {
+    public void update() {
         if (isAppear) {
             image.drawFromTopLeft(this.x, this.y);
         }

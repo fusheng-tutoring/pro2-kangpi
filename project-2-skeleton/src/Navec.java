@@ -1,7 +1,6 @@
 import bagel.Image;
 import bagel.util.Point;
 import bagel.util.Rectangle;
-
 import java.util.ArrayList;
 
 public class Navec extends EnermyEntity {
@@ -27,7 +26,7 @@ public class Navec extends EnermyEntity {
         return NAVEC_MAX_HEALTH;
     }
 
-    public void draw(ArrayList<Entity> entities, ArrayList<Sinkhole> sinkholes, Player player, Point topLeft, Point bottomRight) {
+    public void update(ArrayList<Tree> trees, ArrayList<Sinkhole> sinkholes, Player player, Point topLeft, Point bottomRight) {
         move();
         if (moveDirection == LEFT) {
             if (isInVincible()) {
@@ -42,12 +41,12 @@ public class Navec extends EnermyEntity {
                 setCurrentImage(NAVEC_RIGHT);
             }
         }
-        if(checkBlockCollision(entities,sinkholes) || isOutOfBound(topLeft,bottomRight,this)){
+        if(checkBlockCollision(trees,sinkholes) || isOutOfBound(topLeft,bottomRight,this)){
             moveBack();
         }
         if (checkDemonCollision(player) && !isDead()) {
             Fire Fire = new Fire(getX() + getImage().getWidth() / 2, getY() + getImage().getHeight() / 2,
-                    player.getX() + player.getWidth() / 2, player.getY() + player.getImage().getHeight() / 2);
+                    player.getX() + player.getImage().getWidth() / 2, player.getY() + player.getImage().getHeight() / 2);
         }
         if(navecFire != null &&checkDemonCollision(player) && ! isDead()) {
             navecFire.draw(player);
@@ -64,6 +63,8 @@ public class Navec extends EnermyEntity {
             renderHealthPoints();
         }
     }
+
+
 
     public boolean isOutOfBound(Point topLeft, Point bottomRight, Navec enermyEntity) {
         return (enermyEntity.getY() > bottomRight.y) || (enermyEntity.getY() < topLeft.y)

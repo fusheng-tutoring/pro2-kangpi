@@ -18,8 +18,8 @@ public class Sinkhole extends Entity {
     public boolean getIsAppear() {return this.isAppear;}
 
     @Override
-    public void draw() {
+    public void update() {
         if(isAppear);
-        super.draw();
+        super.update();
     }
 }
