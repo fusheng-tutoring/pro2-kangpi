@@ -11,18 +11,18 @@ public class TimescaleControl {
     public void increaseTimeScale(ArrayList<Demon> demons,Navec navec) {
         this.count ++;
         //check count whether is 3 to -3
-        if(ckeckOutOfBound()) {
+        if(checkOutOfBound()) {
             setSpeed(demons,navec);
             System.out.println("Sped up, Speed: " + count);
         }
     }
     public void decreaseTimeScale(ArrayList<Demon> demons,Navec navec){
-    if(ckeckOutOfBound()) {
+    if(checkOutOfBound()) {
         setSpeed(demons,navec);
         System.out.println("Sped up, Speed: " + count);
     }
     }
-    public boolean ckeckOutOfBound(){
+    public boolean checkOutOfBound(){
         if (count > 3){
             count = 3;
         } else if (count < -3) {
