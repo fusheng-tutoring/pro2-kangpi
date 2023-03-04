@@ -48,6 +48,7 @@ public class EnermyEntity implements Movable{
         this.y = y;
         image = new Image(filename);
         this.InVincibleFrame = 0;
+        this.isAggressive = true;
         this.isInVincible = false;
         this.initialSpeed = moveSize;
     }

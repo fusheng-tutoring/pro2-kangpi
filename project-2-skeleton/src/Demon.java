@@ -12,17 +12,18 @@ public class Demon extends EnermyEntity {
     private final Image DEMON_INVINCIBLE_RIGHT = new Image("res/demon/demoninvincibleRight.PNG");
     private static final double ATTACK_RANGE = 150;
     private Fire fire;
+    public final int LEFT = 2;
     private Random random = new Random();
 
     public Demon(double x, double y, String filename) {
         super(x, y, filename);
-        if (moveDirection == LEFT) {
-            setCurrentImage(DEMON_LEFT);
+        if (this.moveDirection == LEFT) {
+            this.setCurrentImage(DEMON_LEFT);
         } else {
-            setCurrentImage(DEMON_RIGHT);
+            this.setCurrentImage(DEMON_RIGHT);
         }
         this.setHealthPoints(MAX_HEALTH_POINT);
-        setAggressive(random.nextBoolean());
+        this.setAggressive(random.nextBoolean());
     }
 
     public static int getMaxHealthPoint() {
@@ -31,8 +32,8 @@ public class Demon extends EnermyEntity {
 
     public void update(ArrayList<Tree> trees, ArrayList<Sinkhole> sinkholes,
                        Player player, Point topLeft, Point bottomRight) {
+        move();
         if (isAggressive()) {
-            move();
             if (moveDirection == LEFT) {
                 if (isInVincible()) {
                     setCurrentImage(DEMON_INVINCIBLE_LEFT);
@@ -52,21 +53,21 @@ public class Demon extends EnermyEntity {
         if(checkBlockCollision(trees,sinkholes) || isOutOfBound(topLeft,bottomRight,this)){//this
             moveBack();
         }
-        if(checkCollision(player) && !isDead()) {
+        if(checkCollision(player) && !super.isDead()) {
             fire = new Fire(getX() + getImage().getWidth()/2, getY() + getImage().getHeight()/2,
                     player.getX() + player.currentImage.getWidth()/2,player.getY()+player.currentImage.getHeight()/2);
         }
         if(fire != null && checkCollision(player)){
             fire.draw(player);
         }
-        if(isInVincible()){
+        if(super.isInVincible()){
             InVincibleFrame ++;
         }
-        if(getInVincibleFrame()/(REFRESH_RATE/1000) > INVINCIBLE_TIME) {
+        if(super.getInVincibleFrame()/(REFRESH_RATE/1000) > INVINCIBLE_TIME) {
             setInVincible(false);
             setInVincibleFrame(0);
         }
-        if(!isDead()){
+        if(!super.isDead()){
             getImage().drawFromTopLeft(getX(),getY());
             renderHealthPoints();
         }

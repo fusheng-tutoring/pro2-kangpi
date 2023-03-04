@@ -29,13 +29,13 @@ public class Navec extends EnermyEntity {
     public void update(ArrayList<Tree> trees, ArrayList<Sinkhole> sinkholes, Player player, Point topLeft, Point bottomRight) {
         move();
         if (moveDirection == LEFT) {
-            if (isInVincible()) {
+            if (this.isInVincible()) {
                 setCurrentImage(NAVEC_INVINCIBLE_LEFT);
             } else {
                 setCurrentImage(NAVEC_LEFT);
             }
         } else {
-            if (isInVincible()) {
+            if (this.isInVincible()) {
                 setCurrentImage(NAVEC_INVINCIBLE_RIGHT);
             } else {
                 setCurrentImage(NAVEC_RIGHT);

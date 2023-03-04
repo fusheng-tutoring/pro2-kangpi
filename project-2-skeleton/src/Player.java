@@ -30,8 +30,6 @@ public class Player {
     private final int PERCENTAGE = 100;
     private final double HALF = 2.0;
     private final int NO_MOVE = 0;
-    private final int WON_X = 950;
-    private final int WON_Y = 670;
     private final int DEATH = 0;
     private final double INVINCIBLE_TIME = 3000;
     private final double COLL_DOWN_TIME = 2000;
@@ -80,9 +78,10 @@ public class Player {
      * @param walls
      * @param sinkholes
      */
-    public void update(Input input,ArrayList<Wall> walls,ArrayList<Sinkhole> sinkholes, ArrayList<Tree> trees,
-                       ArrayList<Demon> demons, Navec navec, Point topLeft, Point bottomRight) {
-        boolean stop = checkCollisions(walls, sinkholes, trees);
+    public void update(Input input, ArrayList<Wall> walls, ArrayList<Sinkhole> sinkholes, ArrayList<Tree> trees,
+                       ArrayList<Demon> demons, Navec navec, Point topLeft, Point bottomRight, int level) {
+        boolean stop = checkCollisions(walls, sinkholes, trees, level);
+
         if (input.isDown(Keys.UP) && !stop) {
             move(NO_MOVE, -STEP_SIZE);
             xold = cur_x;
@@ -102,7 +101,7 @@ public class Player {
             xold = cur_x - STEP_SIZE;
             yold = cur_y;
         }
-        CurrentImage.drawFromTopLeft(cur_x, cur_y); // Drawing image in every frame
+
         if (input.wasPressed(Keys.A) && !coolDownState) {
             attackState = true;
             if (faceRight) {
@@ -111,10 +110,12 @@ public class Player {
                 setCurrentImage(attackLeft);
             }
         }
+
         if (attackState) {
             checkEnemyCollisions(demons, navec);
             attackFrame++;
         }
+
         if (attackFrame / (REFRESH_RATE / 1000) > ATTACK_TIME) {
             attackState = false;
             coolDownState = true;
@@ -125,9 +126,11 @@ public class Player {
                 setCurrentImage(faeToLeft);
             }
         }
+
         if (coolDownState) {
             coolDownFrame++;
         }
+
         if (coolDownFrame / (REFRESH_RATE / 1000) > COLL_DOWN_TIME) {
             coolDownState = true;
             coolDownFrame = 0;
@@ -136,18 +139,33 @@ public class Player {
                 attackState = true;
             }
         }
+
         if (invincibleState) {
             invincibleFrame ++;
         }
+
         if (invincibleFrame / (REFRESH_RATE / 1000) > INVINCIBLE_TIME) {
             invincibleState = false;
             coolDownState = true;
             invincibleFrame = 0;
         }
-        if (checkCollisions(walls, sinkholes, trees) || navec.isOutOfBound(topLeft,bottomRight,this)){
-            moveBack();
+
+        if (level == 0){
+            if (checkCollisions(walls, sinkholes, trees, level)){
+                moveBack();
+            }
+        } else {
+            if (navec != null) {
+                if (navec.isOutOfBound(topLeft,bottomRight,this)) {
+                    moveBack();
+                }
+            }
+            if (checkCollisions(walls, sinkholes, trees, level)){
+                moveBack();
+            }
         }
-        currentImage.drawFromTopLeft(this.getX(),this.getY());
+
+        CurrentImage.drawFromTopLeft(cur_x, cur_y); // Drawing image in every frame
         drawHealth();
     }
 
@@ -165,20 +183,25 @@ public class Player {
      * @param sinkholes
      * @return boolean
      */
-    public boolean checkCollisions(ArrayList<Wall> walls, ArrayList<Sinkhole> sinkholes, ArrayList<Tree> trees) {
+    public boolean checkCollisions(ArrayList<Wall> walls, ArrayList<Sinkhole> sinkholes,
+                                   ArrayList<Tree> trees, int level) {
         Rectangle playerBox = this.getBoundingBox();
-        for (Entity wall: walls) {
-            Rectangle wallBox = wall.getBoundingBox();
-            if (playerBox.intersects(wallBox)) {
-                return true;
+        if (level == 0){
+            for (Entity wall: walls) {
+                Rectangle wallBox = wall.getBoundingBox();
+                if (playerBox.intersects(wallBox)) {
+                    return true;
+                }
+            }
+        } else {
+            for (Entity tree: trees) {
+                Rectangle treeBox = tree.getBoundingBox();
+                if (playerBox.intersects(treeBox)) {
+                    return true;
+                }
             }
         }
-        for (Entity tree: trees) {
-            Rectangle treeBox = tree.getBoundingBox();
-            if (playerBox.intersects(treeBox)) {
-                return true;
-            }
-        }
+
         for (Sinkhole sinkhole: sinkholes) {
             Rectangle sinkholeBox = sinkhole.getBoundingBox();
             if (sinkholeBox.intersects((playerBox)) && sinkhole.getIsAppear()) {
@@ -193,11 +216,13 @@ public class Player {
     }
     private void checkEnemyCollisions(ArrayList<Demon>demons, Navec navec) {
         Rectangle playerBox = this.getBoundingBox();
-        Rectangle navecBox = navec.getBoundingBox();
-        if(playerBox.intersects(navecBox) && !navec.isInVincible()) {
-            navec.LoseHealthPoints(damagePoint);
-            navec.setInVincible(true);
-            System.out.println("Fae inflicts 20 damage points on Demon. Demon's current health: " + navec.getHealthPoints() + '/' + Navec.getNavecMaxHealth());
+        if (navec != null){
+            Rectangle navecBox = navec.getBoundingBox();
+            if(playerBox.intersects(navecBox) && !navec.isInVincible()) {
+                navec.LoseHealthPoints(damagePoint);
+                navec.setInVincible(true);
+                System.out.println("Fae inflicts 20 damage points on Demon. Demon's current health: " + navec.getHealthPoints() + '/' + Navec.getNavecMaxHealth());
+            }
         }
     }
     /* need check collision with demon*/
@@ -241,9 +266,10 @@ public class Player {
         setX(xold);
         setY(yold);
     }
-    /*Get player status*/
-    public boolean isWon() {return this.cur_x >= WON_X && this.cur_y >= WON_Y;}
-    public boolean isDead() {return healthPoint <= DEATH;}
+    /* Get player status */
+    public boolean isDead() {
+        return healthPoint <= DEATH;
+    }
     /**
      * Make image box for player
      * @return
