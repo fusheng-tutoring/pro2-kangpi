@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/project-2-skeleton/bagel.iml" filepath="$PROJECT_DIR$/project-2-skeleton/bagel.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/pro2-kangpi.iml" filepath="$PROJECT_DIR$/.idea/pro2-kangpi.iml" />
     </modules>
   </component>
